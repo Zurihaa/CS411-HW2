@@ -25,7 +25,7 @@ window.onload = function init() {
         alert("WebGL isn't available");
     }
 
-    createColorCube();
+    createColorCube(); // Reference from https://www.cs.unm.edu/~angel/BOOK/INTERACTIVE_COMPUTER_GRAPHICS/SEVENTH_EDITION/CODE/04/cube.html
     //
     // Configure WebGL
     //
