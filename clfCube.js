@@ -43,7 +43,7 @@ window.onload = function init()
     var colors = [
         vec4(0.0, 0.0, 0.0, 1.0),   
         vec4(1.0, 0.0, 0.0, 1.0),   
-        vec4(1.0, 0.0, 1.0, 1.0),   
+        vec4(1.0, 1.0, 0.0, 1.0),   
         vec4(0.0, 1.0, 0.0, 1.0),   
         vec4(0.0, 0.0, 1.0, 1.0),   
         vec4(1.0, 0.0, 1.0, 1.0),   
@@ -60,7 +60,7 @@ window.onload = function init()
     // Associate out shader variables with our data buffer
 
     var vPosition = gl.getAttribLocation( program, "vPosition" );
-    gl.vertexAttribPointer( vPosition, 2, gl.FLOAT, false, 0, 0 );
+    gl.vertexAttribPointer( vPosition, 3, gl.FLOAT, false, 0, 0 );
     gl.enableVertexAttribArray(vPosition);
 
     // Define a buffer for colors
