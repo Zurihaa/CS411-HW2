@@ -1,68 +1,48 @@
 "use strict";
 
-var gl;
+// WebGL variables
+let canvas;
+let gl;
 
-var theta = 0.0;
-var thetaLoc;
+// Cube properties
+var points = [];
+var colors = [];
 
-var speed = 100;
-var direction = true;
+// Rotation axes and angles
+const xAxis = 0;
+const yAxis = 1;
+const zAxis = 2;
+let currentAxis = xAxis;
+const rotationAngles = [0, 0, 0];
 
-var vertices = [
-    vec4(-0.5, -0.5, -0.5, 1.0),
-    vec4(-0.5, 0.5, -0.5, 1.0),
-    vec4(0.5, 0.5, -0.5, 1.0),
-    vec4(0.5, -0.5, -0.5, 1.0),
-    vec4(-0.5, -0.5, 0.5, 1.0),
-    vec4(-0.5, 0.5, 0.5, 1.0),
-    vec4(0.5, 0.5, 0.5, 1.0),
-    vec4(0.5, -0.5, 0.5, 1.0)
-];
-
-var colors = [
-    vec4(0.0, 0.0, 0.0, 1.0),   // Black
-    vec4(1.0, 0.0, 0.0, 1.0),   // Red
-    vec4(1.0, 1.0, 0.0, 1.0),   // Yellow
-    vec4(0.0, 1.0, 0.0, 1.0),   // Green
-    vec4(0.0, 0.0, 1.0, 1.0),   // Blue
-    vec4(1.0, 0.0, 1.0, 1.0),   // Magenta
-    vec4(1.0, 1.0, 1.0, 1.0),   // White
-    vec4(0.0, 1.0, 1.0, 1.0)    // Cyan
-];
-
-var cubeVertices = [
-    1, 0, 3, 3, 2, 1,
-    2, 3, 7, 7, 6, 2,
-    3, 0, 4, 4, 7, 3,
-    6, 5, 1, 1, 2, 6,
-    4, 5, 6, 6, 7, 4,
-    5, 4, 0, 0, 1, 5
-];
+let thetaLoc;
 
 window.onload = function init() {
-    var canvas = document.getElementById("gl-canvas");
+    canvas = document.getElementById("gl-canvas");
 
     gl = WebGLUtils.setupWebGL(canvas);
     if (!gl) {
         alert("WebGL isn't available");
     }
 
+    createColorCube();
     //
-    //  Configure WebGL
+    // Configure WebGL
     //
     gl.viewport(0, 0, canvas.width, canvas.height);
     gl.clearColor(1.0, 1.0, 1.0, 1.0);
+    gl.enable(gl.DEPTH_TEST);
 
-    //  Load shaders and initialize attribute buffers
-
-    var program = initShaders(gl, "vertex-shader", "fragment-shader");
+    // Load shaders and initialize attribute buffers
+    const program = initShaders(gl, "vertex-shader", "fragment-shader");
     gl.useProgram(program);
 
-    // Load the data into the GPU
-    var bufferId = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);
-    gl.bufferData(gl.ARRAY_BUFFER, flatten(vertices), gl.STATIC_DRAW);
+    // Load the data into the CPU
+    var vBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW);
 
+    // Associate out shader variables with our data buffer
     var vPosition = gl.getAttribLocation(program, "vPosition");
     gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(vPosition);
@@ -77,62 +57,73 @@ window.onload = function init() {
 
     thetaLoc = gl.getUniformLocation(program, "theta");
 
-    // Initialize event handlers
-    document.getElementById("slider").onchange = function(event) {
-        speed = 100 - event.target.value;
+    // Initailize event handler
+
+    // X axis
+    document.getElementById("xButton").onclick = function () {
+        currentAxis = xAxis;
     };
 
-    document.getElementById("Direction").onclick = function (event) {
-        direction = !direction;
+    // Y Axis
+    document.getElementById("yButton").onclick = function () {
+        currentAxis = yAxis;
     };
 
-    document.getElementById("Controls").onclick = function( event) {
-        switch(event.target.index) {
-            case 0:
-                direction = !direction;
-                break;
-
-            case 1:
-                speed /= 2.0;
-                break;
-
-            case 2:
-                speed *= 2.0;
-                break;
-        }
-    };
-
-    window.onkeydown = function( event ) {
-        var key = String.fromCharCode(event.keyCode);
-        switch( key ) {
-            case '1':
-                direction = !direction;
-                break;
-
-            case '2':
-                speed /= 2.0;
-                break;
-
-            case '3':
-                speed *= 2.0;
-                break;
-        }
+    // Z Axis
+    document.getElementById("zButton").onclick = function () {
+        currentAxis = zAxis;
     };
 
     render();
 };
 
-function render() {
-    gl.clear(gl.COLOR_BUFFER_BIT);
+function createColorCube() {
+    quad(1, 0, 3, 2);
+    quad(2, 3, 7, 6);
+    quad(3, 0, 4, 7);
+    quad(6, 5, 1, 2);
+    quad(4, 5, 6, 7);
+    quad(5, 4, 0, 1);
+}
 
-    theta += direction ? 0.1 : -0.1;
-    gl.uniform1f(thetaLoc, theta);
+function quad(a, b, c, d) {
+    var vertices = [
+        vec4(-0.5, -0.5, 0.5, 1.0),
+        vec4(-0.5, 0.5, 0.5, 1.0),
+        vec4(0.5, 0.5, 0.5, 1.0),
+        vec4(0.5, -0.5, 0.5, 1.0),
+        vec4(-0.5, -0.5, -0.5, 1.0),
+        vec4(-0.5, 0.5, -0.5, 1.0),
+        vec4(0.5, 0.5, -0.5, 1.0),
+        vec4(0.5, -0.5, -0.5, 1.0)
+    ];
 
-    for (var i = 0; i < 12; i++) {
-        gl.drawArrays(gl.TRIANGLES, i * 6, 6);
+    var vertexColors = [
+        [0.0, 0.0, 0.0, 1.0], // Black
+        [1.0, 0.0, 0.0, 1.0], // Red
+        [1.0, 1.0, 0.0, 1.0], // Yellow
+        [0.0, 1.0, 0.0, 1.0], // Green
+        [0.0, 0.0, 1.0, 1.0], // Blue
+        [1.0, 0.0, 1.0, 1.0], // Magenta
+        [1.0, 1.0, 1.0, 1.0], // White
+        [0.0, 1.0, 1.0, 1.0]  // Cyan
+    ];
+
+    var indices = [a, b, c, a, c, d];
+
+    for (let i = 0; i < indices.length; ++i) {
+        points.push(vertices[indices[i]]);
+        colors.push(vertexColors[a]);
     }
+}
 
-    setTimeout(function () {
-        requestAnimFrame(render);
-    }, speed);
+function render() {
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+    rotationAngles[currentAxis] += 2.0;
+    gl.uniform3fv(thetaLoc, rotationAngles);
+
+    gl.drawArrays(gl.TRIANGLES, 0, numVertices);
+
+    requestAnimFrame(render);
 }

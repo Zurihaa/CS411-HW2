@@ -1,60 +1,66 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
-    <title>Rotating Square</title>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Rotating cube</title>
     <script id="vertex-shader" type="x-shader/x-vertex">
-      attribute vec4 vPosition;
-      attribute vec4 vColor; // Vertex color
-      varying vec4 fColor; // Fragment color
-  
-      uniform float theta;
+        attribute vec4 vPosition;
+        attribute vec4 vColor; // Vertex Color
+        varying vec4 fColor; // Fragment Color
 
-      void main()
-      {
-      float s = sin( theta );
-      float c = cos( theta );
+        uniform vec3 theta;
 
-      gl_Position.x = -s * vPosition.y + c * vPosition.x;
-      gl_Position.y =  s * vPosition.x + c * vPosition.y;
-      gl_Position.z = 0.0;
-      gl_Position.w = 1.0;
-      
-      fColor = vColor;
-      }
+        void main() {
+            // Compute the sines and cosines of theta for each of the three axes in one computation.
+            vec3 angles = radians(theta);
+            vec3 c = cos(angles);
+            vec3 s = sin(angles);
+
+            // Axis Roatation
+            mat4 rx = mat4(1.0, 0.0, 0.0, 0.0,
+                           0.0, c.x, s.x, 0.0,
+                           0.0, -s.x, c.x, 0.0,
+                           0.0, 0.0, 0.0, 1.0);
+
+            mat4 ry = mat4(c.y, 0.0, -s.y, 0.0,
+                           0.0, 1.0, 0.0, 0.0,
+                           s.y, 0.0, c.y, 0.0,
+                           0.0, 0.0, 0.0, 1.0);
+
+            mat4 rz = mat4(c.z, s.z, 0.0, 0.0,
+                           -s.z, c.z, 0.0, 0.0,
+                           0.0, 0.0, 1.0, 0.0,
+                           0.0, 0.0, 0.0, 1.0);
+
+            fColor = vColor;
+            gl_Position = rz * ry * rx * vPosition;
+            gl_Position.z = -gl_Position.z;
+        }
     </script>
+
     <script id="fragment-shader" type="x-shader/x-fragment">
-      precision mediump float;
-      varying vec4 fColor;
-  
-      void main() {
-        gl_FragColor = fColor;
-      }
+        precision mediump float;
+        varying vec4 fColor;
+
+        void main() {
+            gl_FragColor = fColor;
+        }
     </script>
-    <script type="text/javascript" src="webgl-utils.js"></script>
-    <script type="text/javascript" src="initShader.js"></script>
-    <script type="text/javascript" src="mv.js"></script>
-    <script type="text/javascript" src="clfCube.js"></script>
-  </head>
 
-  <body> 
-    <div>
-      speed 0% <input id="slider" type="range"
-      min="0" max="100" step="10" value="50" />
-      100%
-    </div>
-
-
-    <button id="Direction">Toggle Direction</button>
-
-    <select id="Controls" size="3">
-      <option value="0">Toggle Direction</option>
-      <option value="1">Spin Faster</option>
-      <option value="2">Spin Slower</option>
-    </select>
-
+    <script src="webgl-utils.js" type="text/javascript"></script>
+    <script src="initShader.js" type="text/javascript"></script>
+    <script src="mv.js" type="text/javascript"></script>
+    <script src="cube.js" type="text/javascript"></script>
+</head>
+<body>
     <canvas id="gl-canvas" width="512" height="512">
-    Oops ... your browser doesn't support the HTML5 canvas element
+        Oops ... your browser doesn't support the HTML5 canvas element
     </canvas>
-  </body>
+
+    <br>
+
+    <button id="xButton">Rotate X</button>
+    <button id="yButton">Rotate Y</button>
+    <button id="zButton">Rotate Z</button>
+</body>
 </html>
