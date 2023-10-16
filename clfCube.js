@@ -123,7 +123,7 @@ function render() {
     rotationAngles[currentAxis] += 2.0;
     gl.uniform3fv(thetaLoc, rotationAngles);
 
-    gl.drawArrays(gl.TRIANGLES, 0, numVertices);
+    gl.drawArrays(gl.TRIANGLES, 0, 36);
 
     requestAnimFrame(render);
 }
