@@ -128,6 +128,13 @@ function render()
     theta += (direction ? 0.1 : -0.1);
     gl.uniform1f(thetaLoc, theta);
 
+    // Apply a rotation transformation along the Z-axis
+    var rotationMatrix = mat4();
+    rotationMatrix = mult(rotationMatrix, rotate(theta, [0, 0, 1])); // Rotate along Z-axis
+
+    // Pass the rotation matrix to the shader
+    gl.uniformMatrix4fv(rotateLoc, false, flatten(rotationMatrix));
+
     gl.drawArrays(gl.TRIANGLES, 0, 36); // Draw the cube
 
     setTimeout(
